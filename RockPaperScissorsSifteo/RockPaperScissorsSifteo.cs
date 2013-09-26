@@ -6,8 +6,17 @@ namespace RockPaperScissors
 {
     public class RockPaperScissors : BaseApp
     {
+        public static int WIN = 0;
+        public static int LOSE = 1;
+        public static int DRAW = 2;
+
         private static int NUM_PLAYERS = 2;
         public List<List<CubeWrapper>> mWrappers = new List<List<CubeWrapper>>(NUM_PLAYERS);
+        private static int ROCK = 0;
+        private static int SCISSORS = 1;
+        private static int PAPER = 2;
+        int[] WHAT_BEATS_WHAT = new int[] { SCISSORS, PAPER, ROCK };
+
 
         override public void Setup()
         {
@@ -29,24 +38,42 @@ namespace RockPaperScissors
 		private void OnNeighborAdd(Cube cube1, Cube.Side side1, Cube cube2, Cube.Side side2)  {
 			Log.Debug("Neighbor add: {0}.{1} <-> {2}.{3}", cube1.UniqueId, side1, cube2.UniqueId, side2);
 
-			CubeWrapper wrapper1 = (CubeWrapper)cube1.userData;
-			CubeWrapper wrapper2 = (CubeWrapper)cube2.userData;
+			CubeWrapper cubeWrapper1 = (CubeWrapper)cube1.userData;
+			CubeWrapper cubeWrapper2 = (CubeWrapper)cube2.userData;
 
-            if (wrapper1.mPlayer == wrapper2.mPlayer) {
-                ReevaluateCubePositions(wrapper1.mPlayer);
+            if (cubeWrapper1.mPlayer == cubeWrapper2.mPlayer) {
+                ReevaluateCubePositions(cubeWrapper1.mPlayer);
+            } else if(cubeWrapper1.isSelected() && cubeWrapper2.isSelected()) {
+                Fight(cubeWrapper1, cubeWrapper2);
             }
 		}
 
 		private void OnNeighborRemove(Cube cube1, Cube.Side side1, Cube cube2, Cube.Side side2)  {
 			Log.Debug("Neighbor remove: {0}.{1} <-> {2}.{3}", cube1.UniqueId, side1, cube2.UniqueId, side2);
 
-			CubeWrapper wrapper1 = (CubeWrapper)cube1.userData;
-			CubeWrapper wrapper2 = (CubeWrapper)cube2.userData;
+            CubeWrapper cubeWrapper1 = (CubeWrapper)cube1.userData;
+            CubeWrapper cubeWrapper2 = (CubeWrapper)cube2.userData;
 
-            if (wrapper1.mPlayer == wrapper2.mPlayer) {
-                ReevaluateCubePositions(wrapper1.mPlayer);
+            if (cubeWrapper1.mPlayer == cubeWrapper2.mPlayer) {
+                ReevaluateCubePositions(cubeWrapper1.mPlayer);
+            } else if(cubeWrapper1.IsFighting() && cubeWrapper2.IsFighting()){
+                cubeWrapper1.ResetCube();
+                cubeWrapper2.ResetCube();
             }
 		}
+
+        private void Fight(CubeWrapper cubeA, CubeWrapper cubeB) {
+            if (cubeA.mHandState == cubeB.mHandState) {
+                cubeA.StartFight(DRAW);
+                cubeB.StartFight(DRAW);
+            } else if (cubeA.mHandState == WHAT_BEATS_WHAT[cubeB.mHandState]) {
+                cubeA.StartFight(LOSE);
+                cubeB.StartFight(WIN);
+            } else {
+                cubeA.StartFight(WIN);
+                cubeB.StartFight(LOSE);
+            }
+        }
 
         private void ReevaluateCubePositions(int player) {
             foreach (CubeWrapper wrapper in mWrappers[player]) {

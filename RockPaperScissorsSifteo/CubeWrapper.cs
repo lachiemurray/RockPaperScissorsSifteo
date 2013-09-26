@@ -1,23 +1,28 @@
 using Sifteo;
 using System;
+using System.Timers;
 
 namespace RockPaperScissors
 {
 	public class CubeWrapper
 	{
         private int BORDER_WIDTH = 10;
-        private Color PLAYER_1_COLOR = new Color(255, 0, 0);
-        private Color PLAYER_2_COLOR = new Color(0, 0, 255);
-		private Color POSITION_COLOR = new Color(0, 180, 0);
+        private static Color COLOR_RED = new Color(255, 0, 0);
+        private static Color COLOR_GREEN = new Color(0, 255, 0);
+        private static Color COLOR_BLUE = new Color(0, 0, 255);
+        private static Color POSITION_COLOR = new Color(0, 180, 0);
+        private static Color[] BACKGROUNDS = { COLOR_GREEN, COLOR_RED, COLOR_BLUE };
+        public enum CubeState { UNUSED, VISIBLE, HIDDEN, SELECTED, FIGHT, RESULT }; // more ...
 
         private static Random random = new Random();
 		public Cube mCube;
         public int mPlayer;
-		private int mHandState;
+		public int mHandState;
 		public int mPosition = 0;
+        public CubeState mCubeState = CubeState.UNUSED;
+        private Color mBackgroundColor = Color.White;
 
-        public enum DisplayState { UNUSED, VISIBLE, HIDDEN, SELECTED }; // more ...
-        public DisplayState mDisplayState = DisplayState.UNUSED;
+        private Timer mTimer = new Timer();
 
 		// This flag tells the wrapper to redraw the current image on the cube. (See Tick, below).
 		public bool mNeedDraw = false;
@@ -59,20 +64,21 @@ namespace RockPaperScissors
 			// Clear off whatever was previously on the display before drawing the new image.
 			mCube.FillScreen(Color.Black);
 
-			DrawBorder((mPlayer == 0) ? PLAYER_1_COLOR : PLAYER_2_COLOR, Color.White, BORDER_WIDTH);
-            switch (mDisplayState) {
-                case DisplayState.UNUSED:
+			DrawBorder((mPlayer == 0) ? COLOR_RED : COLOR_BLUE, mBackgroundColor, BORDER_WIDTH);
+            switch (mCubeState) {
+                case CubeState.UNUSED:
                     break;
-                case DisplayState.SELECTED:
+                case CubeState.SELECTED:
                     DrawCrossHair();
                     break;
-                case DisplayState.VISIBLE:
+                case CubeState.FIGHT:
+                case CubeState.VISIBLE:
                     DrawHand();
                     if (mPosition > 0) {
                         DrawPosition();
                     }
                     break;
-                case DisplayState.HIDDEN:
+                case CubeState.HIDDEN:
                     DrawQuestionMark();
                     break;
             }
@@ -107,17 +113,17 @@ namespace RockPaperScissors
 
 		private void OnButton(Cube cube, bool pressed) {
 			Log.Debug("OnButton()");
-            switch (mDisplayState) {
-                case DisplayState.UNUSED:
-                case DisplayState.VISIBLE:
+            switch (mCubeState) {
+                case CubeState.UNUSED:
+                case CubeState.VISIBLE:
                     if (pressed) {
                         mHandState = (mHandState == 2) ? 0 : mHandState + 1;
-                        mDisplayState = DisplayState.VISIBLE;
+                        mCubeState = CubeState.VISIBLE;
                         mNeedDraw = true;
                     }
                     break;
-                case DisplayState.HIDDEN:
-                    mDisplayState = DisplayState.SELECTED;
+                case CubeState.HIDDEN:
+                    mCubeState = CubeState.SELECTED;
                     mNeedDraw = true;
                     break;
             }
@@ -138,13 +144,13 @@ namespace RockPaperScissors
 		private void OnFlip(Cube cube, bool newOrientationIsUp) {
 			Log.Debug("OnFlip()");
             if (!newOrientationIsUp) {
-                switch (mDisplayState) {
-                    case DisplayState.VISIBLE:
-                        mDisplayState = DisplayState.HIDDEN;
+                switch (mCubeState) {
+                    case CubeState.VISIBLE:
+                        mCubeState = CubeState.HIDDEN;
                         mNeedDraw = true;
                         break;
-                    case DisplayState.HIDDEN:
-                        mDisplayState = DisplayState.VISIBLE;
+                    case CubeState.HIDDEN:
+                        mCubeState = CubeState.VISIBLE;
                         mNeedDraw = true;
                         break;
                 }
@@ -186,6 +192,36 @@ namespace RockPaperScissors
             } else {
                 return null;
             }
+        }
+
+        public void StartFight(int result) {
+            mCubeState = CubeState.FIGHT;
+            mNeedDraw = true;
+            mTimer = new Timer(3000);
+            mTimer.Elapsed += delegate { ShowResult(result); }; // do this better
+            mTimer.Enabled = true;
+        }
+
+        public bool isSelected() {
+            return mCubeState == CubeState.SELECTED;
+        }
+
+        public void ResetCube() {
+            mCubeState = CubeState.UNUSED;
+            mNeedDraw = true;
+            mBackgroundColor = Color.White;
+            mTimer.Enabled = false;
+        }
+
+        public void ShowResult(int result) {
+            mCubeState = CubeState.RESULT;
+            mBackgroundColor = BACKGROUNDS[result];
+            mNeedDraw = true;
+            mTimer.Enabled = false;
+        }
+
+        public bool IsFighting() {
+            return mCubeState == CubeState.FIGHT || mCubeState == CubeState.RESULT;
         }
     }
 }
