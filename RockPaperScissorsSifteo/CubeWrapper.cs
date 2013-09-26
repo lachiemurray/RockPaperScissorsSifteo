@@ -11,9 +11,10 @@ namespace RockPaperScissors
 		private Color POSITION_COLOR = new Color(0, 180, 0);
         //private Color TRANSPARENT_COLOR = new Color(72, 255, 170);
 
-		private Cube mCube;
+        private static Random random = new Random();
+		public Cube mCube;
         public int mPlayer;
-		private int mHandState = 0;
+		private int mHandState;
 		public int mPosition = 0;
 
 		// This flag tells the wrapper to redraw the current image on the cube. (See Tick, below).
@@ -23,6 +24,7 @@ namespace RockPaperScissors
         {
 			mCube = cube;
             mPlayer = player;
+            mHandState = random.Next(3);
 
             //Log.Debug(mCube.UniqueId);
 
@@ -117,6 +119,36 @@ namespace RockPaperScissors
 				DrawState();
 			}
 		}
-	}
+
+        public bool HasValidLeftNeighbour() {
+            return ValidLeftNeighbour() != null;
+        }
+
+        public bool HasValidRightNeighbour() {
+            return ValidRightNeighbour() != null;
+        }
+
+        public CubeWrapper ValidLeftNeighbour() {
+            CubeWrapper neighbour = (mCube.Neighbors.Left != null) ? (CubeWrapper)mCube.Neighbors.Left.userData : null;
+            if (neighbour != null && neighbour.mPlayer == mPlayer &&
+                neighbour.mCube.Neighbors.Right != null &&
+                neighbour.mCube.Neighbors.Right.UniqueId == mCube.UniqueId) {
+                return neighbour;
+            } else {
+                return null;
+            }
+        }
+
+        public CubeWrapper ValidRightNeighbour() {
+            CubeWrapper neighbour = (mCube.Neighbors.Right != null) ? (CubeWrapper)mCube.Neighbors.Right.userData : null;
+            if (neighbour != null && neighbour.mPlayer == mPlayer &&
+                neighbour.mCube.Neighbors.Left != null &&
+                neighbour.mCube.Neighbors.Left.UniqueId == mCube.UniqueId) {
+                return neighbour;
+            } else {
+                return null;
+            }
+        }
+    }
 }
 
