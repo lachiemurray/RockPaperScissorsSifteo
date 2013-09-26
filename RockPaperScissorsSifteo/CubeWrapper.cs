@@ -9,13 +9,15 @@ namespace RockPaperScissors
         private Color PLAYER_1_COLOR = new Color(255, 0, 0);
         private Color PLAYER_2_COLOR = new Color(0, 0, 255);
 		private Color POSITION_COLOR = new Color(0, 180, 0);
-        //private Color TRANSPARENT_COLOR = new Color(72, 255, 170);
 
         private static Random random = new Random();
 		public Cube mCube;
         public int mPlayer;
 		private int mHandState;
 		public int mPosition = 0;
+
+        public enum DisplayState { UNUSED, VISIBLE, HIDDEN, SELECTED }; // more ...
+        public DisplayState mDisplayState = DisplayState.UNUSED;
 
 		// This flag tells the wrapper to redraw the current image on the cube. (See Tick, below).
 		public bool mNeedDraw = false;
@@ -25,8 +27,6 @@ namespace RockPaperScissors
 			mCube = cube;
             mPlayer = player;
             mHandState = random.Next(3);
-
-            //Log.Debug(mCube.UniqueId);
 
 			mCube.userData = this;
 
@@ -60,39 +60,67 @@ namespace RockPaperScissors
 			mCube.FillScreen(Color.Black);
 
 			DrawBorder((mPlayer == 0) ? PLAYER_1_COLOR : PLAYER_2_COLOR, Color.White, BORDER_WIDTH);
-			DrawHand();
-
-			if (mPosition > 0) {
-				DrawPosition ();
-			}
+            switch (mDisplayState) {
+                case DisplayState.UNUSED:
+                    break;
+                case DisplayState.SELECTED:
+                    DrawCrossHair();
+                    break;
+                case DisplayState.VISIBLE:
+                    DrawHand();
+                    if (mPosition > 0) {
+                        DrawPosition();
+                    }
+                    break;
+                case DisplayState.HIDDEN:
+                    DrawQuestionMark();
+                    break;
+            }
 
 			mCube.Paint ();
 		}
 
-		private void DrawHand()
-		{
+		private void DrawHand() {
 			int spriteYPos = mHandState * Cube.SCREEN_HEIGHT;
 			mCube.Image("hands", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
 		}
 
-        private void DrawBorder(Color color1, Color color2, int width)
-        {
+        private void DrawQuestionMark() {
+            int spriteYPos = 0;
+            mCube.Image("qmark", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+        }
+
+        private void DrawCrossHair() {
+            int spriteYPos = 0;
+            mCube.Image("crosshair", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+        }
+
+        private void DrawBorder(Color color1, Color color2, int width) {
             mCube.FillRect(color1, 0, 0, Cube.SCREEN_MAX_X, Cube.SCREEN_MAX_Y);
             mCube.FillRect(color2, width, width,
                 Cube.SCREEN_MAX_X - 2 * width, Cube.SCREEN_MAX_Y - 2 * width);
         }
 
-		private void DrawPosition()
-		{
+		private void DrawPosition() {
 			DrawUtils.DrawNumber (mCube, mPosition, Cube.SCREEN_MAX_X - 30, 5, 20, POSITION_COLOR);
 		}
 
 		private void OnButton(Cube cube, bool pressed) {
 			Log.Debug("OnButton()");
-			if (pressed) {
-				mHandState = (mHandState == 2) ? 0 : mHandState + 1;
-				mNeedDraw = true;
-			}
+            switch (mDisplayState) {
+                case DisplayState.UNUSED:
+                case DisplayState.VISIBLE:
+                    if (pressed) {
+                        mHandState = (mHandState == 2) ? 0 : mHandState + 1;
+                        mDisplayState = DisplayState.VISIBLE;
+                        mNeedDraw = true;
+                    }
+                    break;
+                case DisplayState.HIDDEN:
+                    mDisplayState = DisplayState.SELECTED;
+                    mNeedDraw = true;
+                    break;
+            }
 		}
 		
 		private void OnTilt(Cube cube, int tiltX, int tiltY, int tiltZ) {
@@ -109,12 +137,22 @@ namespace RockPaperScissors
 
 		private void OnFlip(Cube cube, bool newOrientationIsUp) {
 			Log.Debug("OnFlip()");
+            if (!newOrientationIsUp) {
+                switch (mDisplayState) {
+                    case DisplayState.VISIBLE:
+                        mDisplayState = DisplayState.HIDDEN;
+                        mNeedDraw = true;
+                        break;
+                    case DisplayState.HIDDEN:
+                        mDisplayState = DisplayState.VISIBLE;
+                        mNeedDraw = true;
+                        break;
+                }
+            }
 		}
 		
-		public void Tick ()
-		{
-			if (mNeedDraw) 
-			{
+		public void Tick () {
+			if (mNeedDraw) {
 				mNeedDraw = false;
 				DrawState();
 			}

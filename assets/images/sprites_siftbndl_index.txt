@@ -1,1 +1,3 @@
+crosshair
 hands
+qmark
