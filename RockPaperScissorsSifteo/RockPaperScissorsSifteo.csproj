@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Sifteo">
-      <HintPath>..\..\..\..\..\Sifteo\Sifteo-SDK-1_1_3\bin\Runtimes\mono\Current\sifteo\Sifteo.dll</HintPath>
+      <HintPath>..\..\..\..\Tools\Sifteo_SDK_mac_1_1_3\Siftdev.app\Contents\Resources\Runtimes\Mono\Current\sifteo\Sifteo.dll</HintPath>
     </Reference>
     <Reference Include="System">
     </Reference>
@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="CubeWrapper.cs" />
     <Compile Include="RockPaperScissorsSifteo.cs" />
+    <Compile Include="DrawUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

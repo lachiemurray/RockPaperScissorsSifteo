@@ -7,18 +7,26 @@ namespace RockPaperScissors
 	{
         private int BORDER_WIDTH = 10;
         private Color PLAYER_1_COLOR = new Color(255, 0, 0);
-        private Color PLAYER_2_COLOR = new Color(0, 255, 0);
-        private Color TRANSPARENT_COLOR = new Color(72, 255, 170);
+        private Color PLAYER_2_COLOR = new Color(0, 0, 255);
+		private Color POSITION_COLOR = new Color(0, 180, 0);
+        //private Color TRANSPARENT_COLOR = new Color(72, 255, 170);
 
 		private Cube mCube;
-        private int mPlayer;
+        public int mPlayer;
+		private int mHandState = 0;
+		public int mPosition = 0;
+
+		// This flag tells the wrapper to redraw the current image on the cube. (See Tick, below).
+		public bool mNeedDraw = false;
 
         public CubeWrapper(Cube cube, int player)
         {
 			mCube = cube;
             mPlayer = player;
 
-            Log.Debug(mCube.UniqueId);
+            //Log.Debug(mCube.UniqueId);
+
+			mCube.userData = this;
 
 			mCube.ButtonEvent += OnButton;
 			mCube.TiltEvent += OnTilt;
@@ -29,17 +37,41 @@ namespace RockPaperScissors
             Init(); 
 		}
 
+		public int GetPosition() {
+			return this.mPosition;
+		}
+
+		public void SetPosition(int position)
+		{
+			this.mPosition = position;
+			this.mNeedDraw = true;
+		}
+
         private void Init()
         {
-            if (mPlayer == 0)
-            {
-                DrawBorder(PLAYER_1_COLOR, Color.White, BORDER_WIDTH);
-            }
-            else
-            {
-                DrawBorder(PLAYER_2_COLOR, Color.White, BORDER_WIDTH);
-            }
+			DrawState();
         }
+
+		private void DrawState()
+		{
+			// Clear off whatever was previously on the display before drawing the new image.
+			mCube.FillScreen(Color.Black);
+
+			DrawBorder((mPlayer == 0) ? PLAYER_1_COLOR : PLAYER_2_COLOR, Color.White, BORDER_WIDTH);
+			DrawHand();
+
+			if (mPosition > 0) {
+				DrawPosition ();
+			}
+
+			mCube.Paint ();
+		}
+
+		private void DrawHand()
+		{
+			int spriteYPos = mHandState * Cube.SCREEN_HEIGHT;
+			mCube.Image("hands", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+		}
 
         private void DrawBorder(Color color1, Color color2, int width)
         {
@@ -48,8 +80,17 @@ namespace RockPaperScissors
                 Cube.SCREEN_MAX_X - 2 * width, Cube.SCREEN_MAX_Y - 2 * width);
         }
 
+		private void DrawPosition()
+		{
+			DrawUtils.DrawNumber (mCube, mPosition, Cube.SCREEN_MAX_X - 30, 5, 20, POSITION_COLOR);
+		}
+
 		private void OnButton(Cube cube, bool pressed) {
 			Log.Debug("OnButton()");
+			if (pressed) {
+				mHandState = (mHandState == 2) ? 0 : mHandState + 1;
+				mNeedDraw = true;
+			}
 		}
 		
 		private void OnTilt(Cube cube, int tiltX, int tiltY, int tiltZ) {
@@ -70,7 +111,11 @@ namespace RockPaperScissors
 		
 		public void Tick ()
 		{
-			mCube.Paint ();
+			if (mNeedDraw) 
+			{
+				mNeedDraw = false;
+				DrawState();
+			}
 		}
 	}
 }
