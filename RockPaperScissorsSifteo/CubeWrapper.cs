@@ -18,14 +18,14 @@ namespace RockPaperScissors
         private static Color COLOR_BLUE = new Color(0, 0, 255);
         private static Color POSITION_COLOR = new Color(0, 180, 0);
         private static Color[] BACKGROUNDS = { COLOR_GREEN, COLOR_RED, COLOR_BLUE };
-        public enum CubeState { UNUSED, WAITING, VISIBLE, HIDDEN, SELECTED, START_FIGHT, FIGHTING, RESULT }; // more ...
+        public enum CubeState { DISCONNECTED, UNUSED, WAITING, VISIBLE, HIDDEN, SELECTED, START_FIGHT, FIGHTING, RESULT }; // more ...
 
         private static Random random = new Random();
 		public Cube mCube;
         public int mPlayer;
 		public int mHandState;
 		public int mPosition = 0;
-        public CubeState mCubeState = CubeState.UNUSED;
+        public CubeState mCubeState = CubeState.DISCONNECTED;
         private Color mBackgroundColor = Color.White;
 		private int joinCounter = 0;
 		private CubeWrapperDelegate mDelegate;
@@ -75,6 +75,8 @@ namespace RockPaperScissors
 
 			DrawBorder((mPlayer == 0) ? COLOR_RED : COLOR_BLUE, mBackgroundColor, BORDER_WIDTH);
             switch (mCubeState) {
+                case CubeState.DISCONNECTED:
+                    break;
 				case CubeState.UNUSED:
 					if (joinCounter < 10) {
 						DrawUtils.DrawJoin (mCube, Color.Black);
@@ -225,6 +227,12 @@ namespace RockPaperScissors
 
         public bool isSelected() {
             return mCubeState == CubeState.SELECTED;
+        }
+
+        public void Connected() {
+            mCubeState = CubeState.UNUSED;
+            mNeedDraw = true;
+            mBackgroundColor = Color.White;
         }
 
         public void JoinGame() {

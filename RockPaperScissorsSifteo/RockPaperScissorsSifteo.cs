@@ -5,15 +5,18 @@ using System.Collections.Generic;
 namespace RockPaperScissors
 {
 
-    public class RockPaperScissors : BaseApp, CubeWrapperDelegate
+    public class RockPaperScissors : BaseApp, CubeWrapperDelegate, ServerDelegate
     {
 
         private static int NUM_PLAYERS = 2;
         public List<List<CubeWrapper>> mWrappers = new List<List<CubeWrapper>>(NUM_PLAYERS);
         private Queue<Fight> mFights = new Queue<Fight>();
+        public static Server mTCPServer;
 
         override public void Setup()
         {
+            mTCPServer = new Server(this);
+
             for (int i = 0; i < NUM_PLAYERS; i++) {
                 mWrappers.Add(new List<CubeWrapper>());
             }
@@ -99,6 +102,14 @@ namespace RockPaperScissors
 				}
 			}
 		}
+
+        public void clientConnected() {
+            foreach (List<CubeWrapper> players in mWrappers) {
+                foreach (CubeWrapper wrapper in players) {
+                    wrapper.Connected();
+                }
+            }
+        }
 
         // dev only
         static void Main(string[] args) { new RockPaperScissors().Run(); }

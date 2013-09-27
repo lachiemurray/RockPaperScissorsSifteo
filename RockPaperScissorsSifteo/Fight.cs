@@ -18,9 +18,9 @@ namespace RockPaperScissors {
         CubeWrapper mPlayer2;
         private bool mIsFinished = false;
         private int mTickCount = 0;
-        private int SHOW_HAND = 100;
-        private int SHOW_RESULT = 200;
-        private int END_FIGHT = 300;
+        private int SHOW_HAND = 40;
+        private int SHOW_RESULT = 80;
+        private int END_FIGHT = 150;
 
         public Fight(CubeWrapper cube1, CubeWrapper cube2) {
 
@@ -36,6 +36,7 @@ namespace RockPaperScissors {
             // TODO: send fight to Alex
 
             if (mTickCount == SHOW_HAND) {
+                RockPaperScissors.mTCPServer.SendMessage(mPlayer1.mHandState.ToString() + mPlayer2.mHandState.ToString());
                 mPlayer1.ShowHand();
                 mPlayer2.ShowHand();
             } else if (mTickCount == SHOW_RESULT) {
