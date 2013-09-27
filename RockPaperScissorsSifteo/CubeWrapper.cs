@@ -13,7 +13,7 @@ namespace RockPaperScissors
         private static Color COLOR_BLUE = new Color(0, 0, 255);
         private static Color POSITION_COLOR = new Color(0, 180, 0);
         private static Color[] BACKGROUNDS = { COLOR_GREEN, COLOR_RED, COLOR_BLUE };
-        public enum CubeState { UNUSED, VISIBLE, HIDDEN, SELECTED, FIGHT, RESULT }; // more ...
+        public enum CubeState { UNUSED, VISIBLE, HIDDEN, SELECTED, START_FIGHT, FIGHTING, RESULT }; // more ...
 
         private static Random random = new Random();
 		public Cube mCube;
@@ -67,13 +67,10 @@ namespace RockPaperScissors
 
 			DrawBorder((mPlayer == 0) ? COLOR_RED : COLOR_BLUE, mBackgroundColor, BORDER_WIDTH);
             switch (mCubeState) {
-                case CubeState.UNUSED:
-                    break;
-                case CubeState.SELECTED:
+                case CubeState.START_FIGHT:
                     DrawCrossHair();
                     break;
-                case CubeState.FIGHT:
-                case CubeState.RESULT:
+                case CubeState.FIGHTING:
                 case CubeState.VISIBLE:
                     DrawHand();
                     if (mPosition > 0) {
@@ -123,10 +120,6 @@ namespace RockPaperScissors
                         mCubeState = CubeState.VISIBLE;
                         mNeedDraw = true;
                     }
-                    break;
-                case CubeState.HIDDEN:
-                    mCubeState = CubeState.SELECTED;
-                    mNeedDraw = true;
                     break;
             }
 		}
@@ -196,12 +189,9 @@ namespace RockPaperScissors
             }
         }
 
-        public void StartFight(int result) {
-            mCubeState = CubeState.FIGHT;
+        public void StartFight() {
+            mCubeState = CubeState.START_FIGHT;
             mNeedDraw = true;
-            mTimer = new Timer(3000);
-            mTimer.Elapsed += delegate { ShowResult(result); }; // do this better
-            mTimer.Enabled = true;
         }
 
         public bool isSelected() {
@@ -215,15 +205,28 @@ namespace RockPaperScissors
             mTimer.Enabled = false;
         }
 
-        public void ShowResult(int result) {
-            mCubeState = CubeState.RESULT;
-            mBackgroundColor = BACKGROUNDS[result];
-            mNeedDraw = true;
-            mTimer.Enabled = false;
+        public bool IsFighting() {
+            return mCubeState == CubeState.FIGHTING || mCubeState == CubeState.START_FIGHT;
         }
 
-        public bool IsFighting() {
-            return mCubeState == CubeState.FIGHT || mCubeState == CubeState.RESULT;
+        public bool IsHidden() {
+            return mCubeState == CubeState.HIDDEN;
+        }
+
+        public void EndFight() {
+            mCubeState = CubeState.UNUSED;
+            mBackgroundColor = Color.White;
+            mNeedDraw = true;
+        }
+
+        public void ShowResult(int result) {
+            mBackgroundColor = BACKGROUNDS[result];
+            mNeedDraw = true;
+        }
+
+        public void ShowHand() {
+            mCubeState = CubeState.FIGHTING;
+            mNeedDraw = true;
         }
     }
 }

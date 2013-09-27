@@ -6,17 +6,11 @@ namespace RockPaperScissors
 {
     public class RockPaperScissors : BaseApp
     {
-        public static int WIN = 0;
-        public static int LOSE = 1;
-        public static int DRAW = 2;
+
 
         private static int NUM_PLAYERS = 2;
         public List<List<CubeWrapper>> mWrappers = new List<List<CubeWrapper>>(NUM_PLAYERS);
-        private static int ROCK = 0;
-        private static int SCISSORS = 1;
-        private static int PAPER = 2;
-        int[] WHAT_BEATS_WHAT = new int[] { SCISSORS, PAPER, ROCK };
-
+        private Queue<Fight> mFights = new Queue<Fight>();
 
         override public void Setup()
         {
@@ -42,9 +36,9 @@ namespace RockPaperScissors
 			CubeWrapper cubeWrapper2 = (CubeWrapper)cube2.userData;
 
             if (cubeWrapper1.mPlayer == cubeWrapper2.mPlayer) {
-                ReevaluateCubePositions(cubeWrapper1.mPlayer);
-            } else if(cubeWrapper1.isSelected() && cubeWrapper2.isSelected()) {
-                Fight(cubeWrapper1, cubeWrapper2);
+                //ReevaluateCubePositions(cubeWrapper1.mPlayer);
+            } else if (cubeWrapper1.IsHidden() && cubeWrapper2.IsHidden()) {
+                mFights.Enqueue(new Fight(cubeWrapper1, cubeWrapper2));
             }
 		}
 
@@ -55,25 +49,9 @@ namespace RockPaperScissors
             CubeWrapper cubeWrapper2 = (CubeWrapper)cube2.userData;
 
             if (cubeWrapper1.mPlayer == cubeWrapper2.mPlayer) {
-                ReevaluateCubePositions(cubeWrapper1.mPlayer);
-            } else if(cubeWrapper1.IsFighting() && cubeWrapper2.IsFighting()){
-                cubeWrapper1.ResetCube();
-                cubeWrapper2.ResetCube();
+                //ReevaluateCubePositions(cubeWrapper1.mPlayer);
             }
 		}
-
-        private void Fight(CubeWrapper cubeA, CubeWrapper cubeB) {
-            if (cubeA.mHandState == cubeB.mHandState) {
-                cubeA.StartFight(DRAW);
-                cubeB.StartFight(DRAW);
-            } else if (cubeA.mHandState == WHAT_BEATS_WHAT[cubeB.mHandState]) {
-                cubeA.StartFight(LOSE);
-                cubeB.StartFight(WIN);
-            } else {
-                cubeA.StartFight(WIN);
-                cubeB.StartFight(LOSE);
-            }
-        }
 
         private void ReevaluateCubePositions(int player) {
             foreach (CubeWrapper wrapper in mWrappers[player]) {
@@ -98,6 +76,16 @@ namespace RockPaperScissors
             foreach (List<CubeWrapper> players in mWrappers) {
                 foreach (CubeWrapper wrapper in players) {
                     wrapper.Tick();
+                }
+            }
+
+            // Update fights
+            if (mFights.Count > 0) {
+                Fight fight = mFights.Peek();
+                if(!fight.IsFinished()) {
+                    fight.Tick();
+                } else {
+                    mFights.Dequeue();
                 }
             }
         }
