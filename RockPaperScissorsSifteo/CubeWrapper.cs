@@ -7,6 +7,7 @@ namespace RockPaperScissors
 	public class CubeWrapper
 	{
         private int BORDER_WIDTH = 10;
+        private int NUM_HAND_STATES = 3;
         private static Color COLOR_RED = new Color(255, 0, 0);
         private static Color COLOR_GREEN = new Color(0, 255, 0);
         private static Color COLOR_BLUE = new Color(0, 0, 255);
@@ -72,6 +73,7 @@ namespace RockPaperScissors
                     DrawCrossHair();
                     break;
                 case CubeState.FIGHT:
+                case CubeState.RESULT:
                 case CubeState.VISIBLE:
                     DrawHand();
                     if (mPosition > 0) {
@@ -117,7 +119,7 @@ namespace RockPaperScissors
                 case CubeState.UNUSED:
                 case CubeState.VISIBLE:
                     if (pressed) {
-                        mHandState = (mHandState == 2) ? 0 : mHandState + 1;
+                        mHandState = (++mHandState % NUM_HAND_STATES);
                         mCubeState = CubeState.VISIBLE;
                         mNeedDraw = true;
                     }
