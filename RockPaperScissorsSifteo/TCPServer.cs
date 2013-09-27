@@ -9,11 +9,12 @@ namespace RockPaperScissors {
 
     public interface ServerDelegate {
         void clientConnected();
+        void gameOver(int winner);
     }
 
     public class Server {
 
-		private bool fakeIt = true;
+		private bool fakeIt = false;
 
         private TcpListener tcpListener;
         private Thread listenThread;
@@ -36,17 +37,15 @@ namespace RockPaperScissors {
 
             this.tcpListener.Start();
 
-            //while (true) {
-                //blocks until a client has connected to the server
-                 mClient = this.tcpListener.AcceptTcpClient();
-                 this.mDelegate.clientConnected();
-                 Log.Debug("Client connected");
+            //blocks until a client has connected to the server
+            mClient = this.tcpListener.AcceptTcpClient();
+            this.mDelegate.clientConnected();
+            Log.Debug("Client connected");
 
-                //create a thread to handle communication 
-                //with connected client
-                //Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
-                //clientThread.Start(client);
-            //}
+            //create a thread to handle communication 
+            //with connected client
+            Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
+            clientThread.Start(mClient);
         }
 
         public void SendMessage(String message) {
@@ -87,7 +86,9 @@ namespace RockPaperScissors {
 
                 //message has successfully been received
                 ASCIIEncoding encoder = new ASCIIEncoding();
-                System.Diagnostics.Debug.WriteLine(encoder.GetString(message, 0, bytesRead));
+                int winner = Convert.ToInt32(encoder.GetString(message, 0, bytesRead));
+                Log.Debug(winner == 0 ? "RED wins!" : "Blue wins!");
+                mDelegate.gameOver(winner);
             }
 
             tcpClient.Close();

@@ -111,6 +111,17 @@ namespace RockPaperScissors
             }
         }
 
+        public void gameOver(int winner) {
+            mFights.Clear();
+
+            foreach (CubeWrapper wrapper in mWrappers[winner]) {
+                wrapper.Celebrate();
+            }
+            foreach (CubeWrapper wrapper in mWrappers[(winner+1) % 2]) {
+                wrapper.Weep();
+            }
+        }
+
         // dev only
         static void Main(string[] args) { new RockPaperScissors().Run(); }
     }

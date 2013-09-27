@@ -18,7 +18,7 @@ namespace RockPaperScissors
         private static Color COLOR_BLUE = new Color(0, 0, 255);
         private static Color POSITION_COLOR = new Color(0, 180, 0);
         private static Color[] BACKGROUNDS = { COLOR_GREEN, COLOR_RED, COLOR_BLUE };
-        public enum CubeState { DISCONNECTED, UNUSED, WAITING, VISIBLE, HIDDEN, SELECTED, START_FIGHT, FIGHTING, RESULT }; // more ...
+        public enum CubeState { DISCONNECTED, UNUSED, WAITING, VISIBLE, HIDDEN, SELECTED, START_FIGHT, FIGHTING, RESULT, WINNER, LOSER }; // more ...
 
         private static Random random = new Random();
 		public Cube mCube;
@@ -80,12 +80,22 @@ namespace RockPaperScissors
                     break;
 				case CubeState.UNUSED:
 					if (joinCounter < 10) {
-						DrawUtils.DrawJoin (mCube, Color.Black);
+                        DrawUtils.DrawJoin(mCube, Color.Black);
 					}
                     break;
 				case CubeState.WAITING:
 					DrawUtils.DrawWait (mCube, Color.Black);
 					break;
+                case CubeState.WINNER:
+                    if (joinCounter < 10) {
+                        DrawUtils.DrawWin(mCube, Color.Black);
+                    }
+                    break;
+                case CubeState.LOSER:
+                    if (joinCounter < 10) {
+                        DrawUtils.DrawLose(mCube, Color.Black);
+                    }
+                    break;
                 case CubeState.START_FIGHT:
                     DrawCrossHair();
                     break;
@@ -183,7 +193,7 @@ namespace RockPaperScissors
 		}
 		
 		public void Tick () {
-			if (mCubeState == CubeState.UNUSED) {
+			if (mCubeState == CubeState.UNUSED || mCubeState == CubeState.WINNER || mCubeState == CubeState.LOSER) {
 				joinCounter = (joinCounter < 20) ? joinCounter + 1 : 0;
 				if (joinCounter == 0 || joinCounter == 10) {
 					mNeedDraw = true;
@@ -268,6 +278,19 @@ namespace RockPaperScissors
 
         public void ShowHand() {
             mCubeState = CubeState.FIGHTING;
+            mBackgroundColor = Color.Black;
+            mNeedDraw = true;
+        }
+
+        public void Celebrate() {
+            mCubeState = CubeState.WINNER;
+            mBackgroundColor = Color.White;
+            mNeedDraw = true;
+        }
+
+        public void Weep() {
+            mCubeState = CubeState.LOSER;
+            mBackgroundColor = Color.White;
             mNeedDraw = true;
         }
     }

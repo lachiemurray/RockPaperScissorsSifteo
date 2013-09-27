@@ -18,9 +18,9 @@ namespace RockPaperScissors {
         CubeWrapper mPlayer2;
         private bool mIsFinished = false;
         private int mTickCount = 0;
-        private int SHOW_HAND = 40;
+        private int SHOW_HAND = 10;
         private int SHOW_RESULT = 80;
-        private int END_FIGHT = 150;
+        private int END_FIGHT = 20;
 
         public Fight(CubeWrapper cube1, CubeWrapper cube2) {
 
@@ -39,7 +39,7 @@ namespace RockPaperScissors {
                 RockPaperScissors.mTCPServer.SendMessage(mPlayer1.mHandState.ToString() + mPlayer2.mHandState.ToString());
                 mPlayer1.ShowHand();
                 mPlayer2.ShowHand();
-            } else if (mTickCount == SHOW_RESULT) {
+            /*} else if (mTickCount == SHOW_RESULT) {
                 if (mPlayer1.mHandState == mPlayer2.mHandState) {
                     mPlayer1.ShowResult(DRAW);
                     mPlayer2.ShowResult(DRAW);
@@ -49,7 +49,7 @@ namespace RockPaperScissors {
                 } else {
                     mPlayer1.ShowResult(WIN);
                     mPlayer2.ShowResult(LOSE);
-                }
+                }*/
             } else if (mTickCount == END_FIGHT) {
                 mPlayer1.EndFight();
                 mPlayer2.EndFight();
