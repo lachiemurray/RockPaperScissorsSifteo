@@ -4,6 +4,11 @@ using System.Timers;
 
 namespace RockPaperScissors
 {
+	public interface CubeWrapperDelegate
+	{
+		void cubeJoined (CubeWrapper wrapper);
+	}
+
 	public class CubeWrapper
 	{
         private int BORDER_WIDTH = 10;
@@ -23,17 +28,19 @@ namespace RockPaperScissors
         public CubeState mCubeState = CubeState.UNUSED;
         private Color mBackgroundColor = Color.White;
 		private int joinCounter = 0;
+		private CubeWrapperDelegate mDelegate;
 
         private Timer mTimer = new Timer();
 
 		// This flag tells the wrapper to redraw the current image on the cube. (See Tick, below).
 		public bool mNeedDraw = false;
 
-        public CubeWrapper(Cube cube, int player)
+        public CubeWrapper(Cube cube, int player, CubeWrapperDelegate theDelegate)
         {
 			mCube = cube;
             mPlayer = player;
             mHandState = random.Next(3);
+			mDelegate = theDelegate;
 
 			mCube.userData = this;
 
@@ -124,17 +131,18 @@ namespace RockPaperScissors
             switch (mCubeState) {
 				case CubeState.UNUSED:
 					if (!pressed) {
+						mDelegate.cubeJoined (this);
 						mCubeState = CubeState.WAITING;
 						mNeedDraw = true;
 					}
 					break;
-                case CubeState.VISIBLE:
-                    if (pressed) {
-                        mHandState = (++mHandState % NUM_HAND_STATES);
-                        mCubeState = CubeState.VISIBLE;
-                        mNeedDraw = true;
-                    }
-                    break;
+	            case CubeState.VISIBLE:
+	                if (pressed) {
+	                    mHandState = (++mHandState % NUM_HAND_STATES);
+	                    mCubeState = CubeState.VISIBLE;
+	                    mNeedDraw = true;
+	                }
+	                break;
             }
 		}
 		
@@ -219,11 +227,10 @@ namespace RockPaperScissors
             return mCubeState == CubeState.SELECTED;
         }
 
-        public void ResetCube() {
-            mCubeState = CubeState.UNUSED;
+        public void JoinGame() {
+            mCubeState = CubeState.VISIBLE;
             mNeedDraw = true;
             mBackgroundColor = Color.White;
-            mTimer.Enabled = false;
         }
 
         public bool IsFighting() {

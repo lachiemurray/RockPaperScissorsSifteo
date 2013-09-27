@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace RockPaperScissors
 {
-    public class RockPaperScissors : BaseApp
-    {
 
+    public class RockPaperScissors : BaseApp, CubeWrapperDelegate
+    {
 
         private static int NUM_PLAYERS = 2;
         public List<List<CubeWrapper>> mWrappers = new List<List<CubeWrapper>>(NUM_PLAYERS);
@@ -22,7 +22,7 @@ namespace RockPaperScissors
             foreach (Cube cube in this.CubeSet)
             {
                 int player = (j++ % NUM_PLAYERS);
-                mWrappers[player].Add(new CubeWrapper(cube, player));
+                mWrappers[player].Add(new CubeWrapper(cube, player, this));
             }
         
             this.CubeSet.NeighborAddEvent += OnNeighborAdd;
@@ -89,6 +89,16 @@ namespace RockPaperScissors
                 }
             }
         }
+
+		public void cubeJoined(CubeWrapper cube) {
+			foreach (CubeWrapper wrapper in mWrappers[(cube.mPlayer + 1) % 2]) {
+				if (wrapper.mCubeState == CubeWrapper.CubeState.WAITING) {
+					cube.JoinGame ();
+					wrapper.JoinGame ();
+					break;
+				}
+			}
+		}
 
         // dev only
         static void Main(string[] args) { new RockPaperScissors().Run(); }
