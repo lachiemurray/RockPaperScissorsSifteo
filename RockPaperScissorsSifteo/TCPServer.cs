@@ -12,6 +12,9 @@ namespace RockPaperScissors {
     }
 
     public class Server {
+
+		private bool fakeIt = true;
+
         private TcpListener tcpListener;
         private Thread listenThread;
         private TcpClient mClient;
@@ -25,6 +28,12 @@ namespace RockPaperScissors {
         }
 
         private void ListenForClients() {
+			if (fakeIt) {
+				Thread.Sleep (1000);
+				this.mDelegate.clientConnected ();
+				return;
+			}
+
             this.tcpListener.Start();
 
             //while (true) {
@@ -41,6 +50,9 @@ namespace RockPaperScissors {
         }
 
         public void SendMessage(String message) {
+			if (fakeIt) {
+				return;
+			}
             Log.Debug("Sending message to client: " + message); 
             NetworkStream clientStream = mClient.GetStream();
             ASCIIEncoding encoder = new ASCIIEncoding();

@@ -75,7 +75,8 @@ namespace RockPaperScissors
 
 			DrawBorder((mPlayer == 0) ? COLOR_RED : COLOR_BLUE, mBackgroundColor, BORDER_WIDTH);
             switch (mCubeState) {
-                case CubeState.DISCONNECTED:
+				case CubeState.DISCONNECTED:
+					DrawDisconnected();
                     break;
 				case CubeState.UNUSED:
 					if (joinCounter < 10) {
@@ -105,18 +106,23 @@ namespace RockPaperScissors
 
 		private void DrawHand() {
 			int spriteYPos = mHandState * Cube.SCREEN_HEIGHT;
-			mCube.Image("hands", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+			mCube.Image("sprites", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
 		}
 
         private void DrawQuestionMark() {
-            int spriteYPos = 0;
-            mCube.Image("qmark", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+			int spriteYPos = (Cube.SCREEN_HEIGHT * 5);
+            mCube.Image("sprites", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
         }
 
         private void DrawCrossHair() {
-            int spriteYPos = 0;
-            mCube.Image("crosshair", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+            int spriteYPos = (Cube.SCREEN_HEIGHT * 4);
+            mCube.Image("sprites", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
         }
+
+		private void DrawDisconnected() {
+			int spriteYPos = (Cube.SCREEN_HEIGHT * 3);
+			mCube.Image("sprites", 0, 0, 0, spriteYPos, Cube.SCREEN_WIDTH, Cube.SCREEN_HEIGHT, 0, 0);
+		}
 
         private void DrawBorder(Color color1, Color color2, int width) {
             mCube.FillRect(color1, 0, 0, Cube.SCREEN_MAX_X, Cube.SCREEN_MAX_Y);
