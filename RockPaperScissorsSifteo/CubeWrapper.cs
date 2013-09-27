@@ -131,9 +131,9 @@ namespace RockPaperScissors
             switch (mCubeState) {
 				case CubeState.UNUSED:
 					if (!pressed) {
-						mDelegate.cubeJoined (this);
 						mCubeState = CubeState.WAITING;
 						mNeedDraw = true;
+                        mDelegate.cubeJoined(this);
 					}
 					break;
 	            case CubeState.VISIBLE:
