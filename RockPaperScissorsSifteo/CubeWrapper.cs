@@ -13,7 +13,7 @@ namespace RockPaperScissors
         private static Color COLOR_BLUE = new Color(0, 0, 255);
         private static Color POSITION_COLOR = new Color(0, 180, 0);
         private static Color[] BACKGROUNDS = { COLOR_GREEN, COLOR_RED, COLOR_BLUE };
-        public enum CubeState { UNUSED, VISIBLE, HIDDEN, SELECTED, FIGHT, RESULT }; // more ...
+        public enum CubeState { UNUSED, WAITING, VISIBLE, HIDDEN, SELECTED, FIGHT, RESULT }; // more ...
 
         private static Random random = new Random();
 		public Cube mCube;
@@ -22,6 +22,7 @@ namespace RockPaperScissors
 		public int mPosition = 0;
         public CubeState mCubeState = CubeState.UNUSED;
         private Color mBackgroundColor = Color.White;
+		private int joinCounter = 0;
 
         private Timer mTimer = new Timer();
 
@@ -67,8 +68,14 @@ namespace RockPaperScissors
 
 			DrawBorder((mPlayer == 0) ? COLOR_RED : COLOR_BLUE, mBackgroundColor, BORDER_WIDTH);
             switch (mCubeState) {
-                case CubeState.UNUSED:
+				case CubeState.UNUSED:
+					if (joinCounter < 10) {
+						DrawUtils.DrawJoin (mCube, Color.Black);
+					}
                     break;
+				case CubeState.WAITING:
+					DrawUtils.DrawWait (mCube, Color.Black);
+					break;
                 case CubeState.SELECTED:
                     DrawCrossHair();
                     break;
@@ -116,7 +123,12 @@ namespace RockPaperScissors
 		private void OnButton(Cube cube, bool pressed) {
 			Log.Debug("OnButton()");
             switch (mCubeState) {
-                case CubeState.UNUSED:
+				case CubeState.UNUSED:
+					if (!pressed) {
+						mCubeState = CubeState.WAITING;
+						mNeedDraw = true;
+					}
+					break;
                 case CubeState.VISIBLE:
                     if (pressed) {
                         mHandState = (++mHandState % NUM_HAND_STATES);
@@ -160,6 +172,13 @@ namespace RockPaperScissors
 		}
 		
 		public void Tick () {
+			if (mCubeState == CubeState.UNUSED) {
+				joinCounter = (joinCounter < 20) ? joinCounter + 1 : 0;
+				if (joinCounter == 0 || joinCounter == 10) {
+					mNeedDraw = true;
+				}
+			}
+
 			if (mNeedDraw) {
 				mNeedDraw = false;
 				DrawState();
